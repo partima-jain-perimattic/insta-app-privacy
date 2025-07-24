@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Instagram Login</title>
+    <script async defer crossorigin="anonymous"
+      src="https://connect.facebook.net/en_US/sdk.js"></script>
+  </head>
+  <body>
+    <h2>Login with Instagram</h2>
+    <button onclick="login()">Login with Instagram</button>
+
+    <script>
+      // Step 1: Load Facebook SDK
+      window.fbAsyncInit = function () {
+        FB.init({
+          appId: '1099677145467782', // Your App ID
+          cookie: true,
+          xfbml: true,
+          version: 'v19.0'
+        });
+      };
+
+      // Step 2: Login and send token to backend
+      function login() {
+        FB.login(function (response) {
+          if (response.authResponse) {
+            const accessToken = response.authResponse.accessToken;
+            console.log("Short Token: ", accessToken);
+
+            // Step 3: Send to FastAPI (your ngrok backend)
+            fetch('https://93066f65dbd5.ngrok-free.app/exchange_token', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ short_token: accessToken })
+            })
+              .then((res) => res.json())
+              .then((data) => {
+                console.log("Long-lived Token:", data);
+                alert("Long-lived token: " + data.access_token);
+              });
+          } else {
+            alert("Login failed.");
+          }
+        }, { scope: 'instagram_basic,pages_show_list,instagram_manage_insights,pages_read_engagement' });
+      }
+    </script>
+  </body>
+</html>
